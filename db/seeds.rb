@@ -10,15 +10,14 @@
 require 'faker'
 require 'time'
 
-
 # 1 On nettoie la base au cas où il reste des choses...
 # -----------------------------------------------------
-
 Doctor.destroy_all
 Patient.destroy_all
 Appointment.destroy_all
 City.destroy_all
-#JoinTableSpecialtyDoctor.destroy_all
+JoinTableSpecialtyDoctor.destroy_all
+Specialty.destroy_all
 
 # Renseignons des paramètres pour ajuster si nécessaire :
 # -------------------------------------------------------
@@ -27,29 +26,35 @@ number_of_doctor=20
 number_of_patient=80
 number_of_appointment=150
 # Tableau de spécialités à définir
-specialties =["Cardiology", "Generalist", "Surgery", "Gastroenterologic surgery", "Neurology", "Stomatology", "Plastic surgery", "Immunology", "Neuropsychiatry", "Endocrinology"]
-doctors  = []
-patients = []
-cities   = []
+specialty_array =["Cardiology", "Generalist", "Surgery", "Gastroenterologic surgery", "Neurology", "Stomatology", "Plastic surgery", "Immunology", "Neuropsychiatry", "Endocrinology"]
 
+doctors     = []
+patients    = []
+cities      = []
 
 
 #2 On va créer des éléments...
 #  ----------------------------
 # if you need help to modify : https://github.com/faker-ruby/faker/blob/master/doc/default/address.md
 
-# Les villes :
-#Seed des 20 villes
+# Création de la table des spécialités :
+#
+specialty_array.size.times do |n|
+  specialty = Specialty.create(name: specialty_array[n])
+end
+puts "#{specialty_array.size} specialties generated"
+
+# Les villes : 20 villes
+#
 number_of_city.times do |n|
   city = City.create(name: Faker::Address.city)
   cities << city
 end
 puts "#{number_of_city} cities has been created"
 
-# Les docteurs (la spécialité suivra)
+# Les docteurs (la spécialité suivra dans le table-join)
 number_of_doctor.times do |n|
   doctor = Doctor.create(first_name: Faker::Name.first_name, last_name: Faker::Name.last_name, zip_code: Faker::Address.zip_code)
-  doctor.specialty = specialties.sample # add specialty to doctor
   doctor.city = cities.sample # add a city to doctor
   doctor.save
   doctors << doctor
@@ -57,6 +62,11 @@ number_of_doctor.times do |n|
   print "Doctor number #{n} created in database" if n%10 == 0 # Message tous les 10
 end
 puts "Doctors, ok " + "-="*30
+
+# Attibution de façon aléatoire de spécialités aux docteurs via la table Join !
+# 2 spécialités en moyenne par docteur !
+(number_of_doctor*2).times {JoinTableSpecialtyDoctor.create(doctor: Doctor.all.sample, specialty: Specialty.all.sample)}
+
 
 # Les Patients :
 number_of_patient.times do |n|

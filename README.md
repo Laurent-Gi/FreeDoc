@@ -243,4 +243,67 @@ end
     t.belongs_to :appointments, index: true
 
 
-# LA SUITE RESTE A FAIRE...
+# LA SUITE...
+
+## Suppression de la column specialty
+
+class DeleteDoctorSpecialtyColumn < ActiveRecord::Migration[5.2]
+  def change
+    remove_column :doctors, :specialty, :string #suppression de la colonne specialty de la table doctors
+  end
+end
+
+
+## Ajout de 2 modèles
+
+
+$ rails generate model Specialty name:string
+
+$ rails generate model JoinTableSpecialtyDoctor
+
+
+On met à jours les tables :
+
+class CreateSpecialties < ActiveRecord::Migration[5.2]
+  def change
+    create_table :specialties do |t|
+      t.string :name
+
+      t.timestamps
+    end
+  end
+end
+
+class CreateJoinTableSpecialtyDoctors < ActiveRecord::Migration[5.2]
+  def change
+    create_table :join_table_specialty_doctors do |t|
+      t.belongs_to :doctor, index: true
+      t.belongs_to :specialty, index: true
+      t.timestamps
+    end
+  end
+end
+
+
+
+Et les modeles:
+
+class Specialty < ApplicationRecord
+  has_many :join_table_specialty_doctor
+  has_many :doctors, through: :join_table_specialty_doctor
+end
+
+Doctor MAJ:
+  has_many :join_table_specialty_doctor
+  has_many :specialties, through: :join_table_specialty_doctor
+
+
+class JoinTableSpecialtyDoctor < ApplicationRecord
+  belongs_to :doctor
+  belongs_to :specialty
+end
+
+
+## Mise à jour du fichier seed.rb !
+
+## Les tests dans la console sont concluants !!!
