@@ -140,7 +140,7 @@ class Patient < ApplicationRecord
 end
 
 
-# On se tente un migrate !!!
+# On fait un migrate !!!
 
 rails db:migrate
 
@@ -158,6 +158,7 @@ database: /home/saives/THP-PROJECT/S5/J4/freedoc/db/development.sqlite3
 
 
 # Test dans la console en mode sandbox (pas de sauvegarde des modif après la sortie)
+# ------------------------------------
 
 d = Doctor.create
 
@@ -185,28 +186,61 @@ a = Appointment.create(doctor: d, patient: p)
 # -----------------------------
 
 require 'faker'
+require 'time' # j'utilise Time.parse
 
-100.times do
-  user = User.create!(first_name: Faker::Name.first_name, email: Faker::Internet.email)
-end
-
-puts "100 utilisateurs ont été créés grace à Faker"
+Tout ceci est déjà très très long !!!!
 
 
 # On veut ajouter city :
 
-has_many doctors patients appointments (through doctor through patient ?)
+
+### On va donc créer un model City - /!\ DANS L'ORDRE
 
 
+# 1 On ajoute des champs cities aux doctor, patient, appointment
 
+##rails generate model City name:string
+
+(un model City, qui a comme attributs :
+un name, qui est un string)
+
+
+# On crée les modèles 
+class City < ApplicationRecord
+  has_many :doctors
+  has_many :patients
+  has_many :appointments
+end
+
+class Appointment < ApplicationRecord
+
+  belongs_to :doctor
+  belongs_to :patient
+  belongs_to :city, optional: true
+
+end
+
+class Doctor < ApplicationRecord
+
+  has_many :appointments
+  has_many :patients, through: :appointments
+  belongs_to :city, optional: true
+
+end
+
+class Patient < ApplicationRecord
+
+  has_many :appointments
+  has_many :doctors, through: :appointments
+  belongs_to :city, optional: true
+
+end
+
+# Création des liens de dépendance de table :
+
+    t.belongs_to :doctor, index: true
+    t.belongs_to :patient, index: true
+    t.belongs_to :appointments, index: true
 
 
 # LA SUITE RESTE A FAIRE...
-
-
-
-
-
-Seed
-db/seed.rb
-rails db:seed
